@@ -18,7 +18,7 @@ object CodeGenerator {
                 "        jstring packageName) {\n" +
                 "     jstring obfuscatingJStr = getSignature(pEnv, packageName);\n" +
                 "     char obfuscatedSecret[] = $obfuscatedKey;\n" +
-                "     return getOriginalKey(obfuscatedSecret, sizeof(obfuscatedSecret), packageName, pEnv);\n" +
+                "     return getOriginalKey(obfuscatedSecret, sizeof(obfuscatedSecret), obfuscatingJStr, pEnv);\n" +
                 "}\n"
     }
 
