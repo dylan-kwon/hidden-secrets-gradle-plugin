@@ -34,11 +34,25 @@ object Utils {
     }
 
     /**
+     * Obfuscator is created using SHA-256 of (keyHash + package)
+     */
+    fun createObfuscator(
+        keyHash: String,
+        packageName: String
+    ): String {
+        return sha256(keyHash + packageName)
+    }
+
+    /**
      * Encode a string key to and hex array using package name
      */
-    fun encodeSecret(key: String, packageName: String): String {
+    fun encodeSecret(
+        key: String,
+        keyHash: String,
+        packageName: String
+    ): String {
         // Generate the obfuscator as the SHA256 of the app package name
-        val obfuscator = sha256(packageName)
+        val obfuscator = createObfuscator(keyHash, packageName)
         val obfuscatorBytes = obfuscator.toByteArray()
 
         // Generate the obfuscated secret bytes array by applying a XOR between the secret and the obfuscator

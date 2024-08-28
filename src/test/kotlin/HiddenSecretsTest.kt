@@ -30,6 +30,7 @@ class HiddenSecretsTest : WordSpec({
         // Properties
         val key = "thisIsATestKey"
         val packageName = "com.package.test"
+        val keyHash = "5ptCUaVG+0JGgprlT1yKuyJrUI4="
 
         "Make command ${HiddenSecretsPlugin.TASK_COPY_CPP} succeed" {
             val result = gradleRunner.withArguments(HiddenSecretsPlugin.TASK_COPY_CPP).build()
@@ -42,10 +43,10 @@ class HiddenSecretsTest : WordSpec({
         }
 
         "Make command ${HiddenSecretsPlugin.TASK_OBFUSCATE} succeed" {
-            val result = gradleRunner.withArguments(HiddenSecretsPlugin.TASK_OBFUSCATE, "-Pkey=$key", "-Ppackage=$packageName").build()
+            val result = gradleRunner.withArguments(HiddenSecretsPlugin.TASK_OBFUSCATE, "-Pkey=$key", "-Ppackage=$packageName", "-PkeyHash=$keyHash").build()
             println(result.output)
             // Should contain obfuscated key
-            result.output shouldContain "{ 0x15, 0x58, 0xb, 0x43, 0x78, 0x4a, 0x23, 0x6d, 0x1, 0x4b, 0x46, 0x7c, 0x57, 0x41 }"
+            result.output shouldContain "{ 0x45, 0xd, 0x5e, 0x42, 0x7d, 0x10, 0x76, 0x36, 0x6, 0x15, 0x16, 0x73, 0x51, 0x18 }"
         }
 
         "Make command ${HiddenSecretsPlugin.TASK_PACKAGE_NAME} succeed" {

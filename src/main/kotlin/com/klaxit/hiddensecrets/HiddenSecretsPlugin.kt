@@ -21,6 +21,7 @@ open class HiddenSecretsPlugin : Plugin<Project> {
         private const val APP_MAIN_FOLDER = "src/main/"
         private const val DEFAULT_KEY_NAME_LENGTH = 8
         private const val KEY_PLACEHOLDER = "YOUR_KEY_GOES_HERE"
+        private const val KEY_NAME_PLACEHOLDER = "YOUR_KEY_NAME_GOES_HERE"
         private const val PACKAGE_PLACEHOLDER = "YOUR_PACKAGE_GOES_HERE"
         private const val KOTLIN_FILE_NAME = "Secrets.kt"
 
@@ -40,10 +41,12 @@ open class HiddenSecretsPlugin : Plugin<Project> {
         private const val PROP_KEY_NAME = "keyName"
         private const val PROP_PACKAGE = "package"
         private const val PROP_FILE_NAME = "propertiesFileName"
+        private const val PROP_KEY_HASH = "keyHash"
 
         // Errors
         private const val ERROR_EMPTY_KEY = "No key provided, use argument '-Pkey=yourKey'"
         private const val ERROR_EMPTY_PACKAGE = "Empty package name, use argument '-Ppackage=your.package.name'"
+        private const val ERROR_EMPTY_KEY_HASH = "Empty keyHash, use argument '-PkeyHash=yourKeystoreHash'"
 
         // Sample usage
         private const val SAMPLE_FROM_PROPS = "-P${PROP_FILE_NAME}=credentials.properties"
@@ -161,16 +164,34 @@ open class HiddenSecretsPlugin : Plugin<Project> {
         }
 
         /**
+         * Get key hash param from command line
+         */
+        @Input
+        fun getKeyHash(): String {
+            val key: String
+            if (project.hasProperty(PROP_KEY_HASH)) {
+                // From command line
+                key = project.property(PROP_KEY_HASH) as String
+            } else {
+                throw InvalidUserDataException(ERROR_EMPTY_KEY_HASH)
+            }
+            return key
+        }
+
+        /**
          * Generate en encoded key from command line params
          */
         fun getObfuscatedKey(): String {
             val key = getKeyParam()
             println("### SECRET ###\n$key\n")
 
+            val keyHash = getKeyHash()
+            println("### KEY HASH ###\n$keyHash\n")
+
             val packageName = getPackageNameParam()
             println("### PACKAGE NAME ###\n$packageName\n")
 
-            val encodedKey = Utils.encodeSecret(key, packageName)
+            val encodedKey = Utils.encodeSecret(key, keyHash, packageName)
             println("### OBFUSCATED SECRET ###\n$encodedKey")
             return encodedKey
         }
@@ -261,7 +282,8 @@ open class HiddenSecretsPlugin : Plugin<Project> {
         fun hideSecret(
             keyName: String,
             packageName: String,
-            obfuscatedKey: String
+            obfuscatedKey: String,
+            keyHash: String,
         ) {
             // Add method in Kotlin code
             var secretsKotlin = getKotlinFile()
@@ -302,7 +324,7 @@ open class HiddenSecretsPlugin : Plugin<Project> {
                     // Replace package name
                     text = text.replace(PACKAGE_PLACEHOLDER, Utils.getCppName(kotlinPackage))
                     // Replace key name
-                    text = text.replace("YOUR_KEY_NAME_GOES_HERE", cppKeyName)
+                    text = text.replace(KEY_NAME_PLACEHOLDER, cppKeyName)
                     // Replace demo key
                     text = text.replace(KEY_PLACEHOLDER, obfuscatedKey)
                     secretsCpp.writeText(text)
@@ -389,8 +411,9 @@ open class HiddenSecretsPlugin : Plugin<Project> {
                 val keyName = getKeyNameParam()
                 val packageName = getPackageNameParam()
                 val obfuscatedKey = getObfuscatedKey()
+                val keyHash = getKeyHash()
 
-                hideSecret(keyName, packageName, obfuscatedKey)
+                hideSecret(keyName, packageName, obfuscatedKey, keyHash)
             }
         }
 
@@ -408,14 +431,17 @@ open class HiddenSecretsPlugin : Plugin<Project> {
                 copyCppFiles(true)
                 copyKotlinFile(true)
 
+                val keyHash = getKeyHash()
                 val packageName = getPackageNameParam()
                 val propsFile = getPropertiesFile()
                 val props = getPropertiesFromFile(propsFile = propsFile)
                 println("Generating secrets from props: ${propsFile.path}")
                 props.entries.forEach { entry ->
                     val keyName = entry.key as String
-                    val obfuscatedKey = Utils.encodeSecret(entry.value as String, packageName)
-                    hideSecret(keyName, packageName, obfuscatedKey)
+                    val obfuscatedKey = Utils.encodeSecret(
+                        entry.value as String, keyHash, packageName
+                    )
+                    hideSecret(keyName, packageName, obfuscatedKey, keyHash)
                 }
             }
         }

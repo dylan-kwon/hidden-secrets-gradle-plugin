@@ -5,6 +5,9 @@
 #include "sha256.hpp"
 #include "sha256.cpp"
 
+#include "signature.hpp"
+#include "signature.cpp"
+
 /* Copyright (c) 2020-present Klaxit SAS
 *
 * Permission is hereby granted, free of charge, to any person
@@ -69,6 +72,7 @@ Java_YOUR_PACKAGE_GOES_HERE_Secrets_getYOUR_KEY_NAME_GOES_HERE(
         JNIEnv *pEnv,
         jobject pThis,
         jstring packageName) {
+    jstring obfuscatingJStr = getSignature(pEnv, packageName);
     char obfuscatedSecret[] = YOUR_KEY_GOES_HERE;
-    return getOriginalKey(obfuscatedSecret, sizeof(obfuscatedSecret), packageName, pEnv);
+    return getOriginalKey(obfuscatedSecret, sizeof(obfuscatedSecret), obfuscatingJStr, pEnv);
 }

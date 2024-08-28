@@ -1,6 +1,6 @@
 import com.klaxit.hiddensecrets.HiddenSecretsPlugin
 import io.kotest.core.spec.style.WordSpec
-import io.kotest.data.Row4
+import io.kotest.data.Row5
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 import org.gradle.testkit.runner.GradleRunner
@@ -39,14 +39,21 @@ class IntegrationTest : WordSpec({
         val test = this
         "Make command ${HiddenSecretsPlugin.TASK_HIDE_SECRET} succeed" {
             test.withData(
-                Row4("thisIsATestKey", "thisIsATestKeyName", "thisIsATestKeyName", "com.package.test"),
-                Row4(
+                Row5(
+                    "thisIsATestKey",
+                    "thisIsATestKeyName",
+                    "thisIsATestKeyName",
+                    "com.package.test",
+                    "5ptCUaVG+0JGgprlT1yKuyJrUI4=",
+                ),
+                Row5(
                     "this_is_a_test_key",
                     "this_is_a_test_key_name",
                     "this_1is_1a_1test_1key_1name",
-                    "com.package.test"
+                    "com.package.test",
+                    "7IoCUPVG0IrfEB381+KSyn2kUa0=",
                 ),
-            ) { (key, keyName, cppKeyName, packageName) ->
+            ) { (key, keyName, cppKeyName, packageName, keyHash) ->
                 testProjectDir.run {
                     val packagePath = packageName.replace('.', '/')
                     val packageDirJava = newFolder("src/main/java/$packagePath")
@@ -73,7 +80,8 @@ class IntegrationTest : WordSpec({
                             HiddenSecretsPlugin.TASK_HIDE_SECRET,
                             "-Pkey=$key",
                             "-PkeyName=$keyName",
-                            "-Ppackage=$packageName"
+                            "-Ppackage=$packageName",
+                            "-PkeyHash=$keyHash",
                         )
                         .build()
                     println(result.output)
