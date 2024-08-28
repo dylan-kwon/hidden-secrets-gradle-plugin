@@ -1,5 +1,6 @@
-#include <fstream>
-#include "sha256.hpp"
+#include "secrets.hpp"
+
+#include <jni.h>
 
 /* Copyright (c) 2024-present Dylan Kwon
 *

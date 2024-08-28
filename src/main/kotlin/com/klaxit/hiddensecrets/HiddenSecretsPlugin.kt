@@ -283,7 +283,6 @@ open class HiddenSecretsPlugin : Plugin<Project> {
             keyName: String,
             packageName: String,
             obfuscatedKey: String,
-            keyHash: String,
         ) {
             // Add method in Kotlin code
             var secretsKotlin = getKotlinFile()
@@ -411,9 +410,8 @@ open class HiddenSecretsPlugin : Plugin<Project> {
                 val keyName = getKeyNameParam()
                 val packageName = getPackageNameParam()
                 val obfuscatedKey = getObfuscatedKey()
-                val keyHash = getKeyHash()
 
-                hideSecret(keyName, packageName, obfuscatedKey, keyHash)
+                hideSecret(keyName, packageName, obfuscatedKey)
             }
         }
 
@@ -441,7 +439,7 @@ open class HiddenSecretsPlugin : Plugin<Project> {
                     val obfuscatedKey = Utils.encodeSecret(
                         entry.value as String, keyHash, packageName
                     )
-                    hideSecret(keyName, packageName, obfuscatedKey, keyHash)
+                    hideSecret(keyName, packageName, obfuscatedKey)
                 }
             }
         }
