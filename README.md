@@ -53,7 +53,7 @@ For more details about the installation check the [plugin's page](https://plugin
 
 Obfuscate and hide your key in your project :
 ```shell
-./gradlew hideSecret -Pkey=yourKeyToObfuscate [-PkeyName=YourSecretKeyName] [-Ppackage=com.your.package]
+./gradlew hideSecret -PkeyHash=YourKeystoreHash -Pkey=yourKeyToObfuscate [-PkeyName=YourSecretKeyName] [-Ppackage=com.your.package]
 ```
 The parameter `keyName` is optional, by default the key name is randomly generated.
 The parameter `package` is optional, by default the `applicationId` of your project will be used.
@@ -92,7 +92,7 @@ As an example, we will use a [rot13 algorithm](https://en.wikipedia.org/wiki/ROT
 After a rot13 encoding your key `yourKeyToObfuscate` becomes `lbheXrlGbBoshfpngr`.
 Add it in your app :
 ```shell
-./gradlew hideSecret -Pkey=lbheXrlGbBoshfpngr -PkeyName=YourSecretKeyName
+./gradlew hideSecret -Pkey=lbheXrlGbBoshfpngr -PkeyName=YourSecretKeyName -PkeyHash=YourKeystoreHash
 ```
 
 Then in `secrets.cpp` you need to add your own decoding code in `customDecode` method:
@@ -145,7 +145,7 @@ keyName2=yourKeyToObfuscate2
 3. Run
 
 ``` shell
-./gradlew hideSecretFromPropertiesFile -PpropertiesFileName=credentials.properties
+./gradlew hideSecretFromPropertiesFile -PpropertiesFileName=credentials.properties -PkeyHash=YourKeystoreHash
 ```
 
 It will regenerate all secret files in the project and update all secrets from the properties file.
