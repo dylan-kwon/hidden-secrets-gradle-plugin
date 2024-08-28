@@ -59,24 +59,34 @@ jstring getKeyHash(JNIEnv *pEnv) {
     jobject packageInfoObject = pEnv->CallObjectMethod(packageManagerObject, getPackageInfoMethodId, packageNameString, 0x08000000);
     jclass packageInfoClass = pEnv->GetObjectClass(packageInfoObject);
 
-    // SigningInfo
-    jfieldID signingInfoFieldId = pEnv->GetFieldID(packageInfoClass, "signingInfo", "Landroid/content/pm/SigningInfo;");
-    jobject signingInfoObject = pEnv->GetObjectField(packageInfoObject, signingInfoFieldId);
-    jclass signingInfoClass = pEnv->GetObjectClass(signingInfoObject);
-
-    // SigningInfo.hasMultipleSignersBoolean
-    jmethodID hasMultipleSignersMethodId = pEnv->GetMethodID(signingInfoClass, "hasMultipleSigners", "()Z");
-    jboolean hasMultipleSignersBoolean = pEnv->CallBooleanMethod(signingInfoObject, hasMultipleSignersMethodId);
+    // SDK Version
+    jclass buildClass = pEnv->FindClass("android/os/Build$VERSION");
+    jfieldID versionCodeFieldId = pEnv->GetStaticFieldID(buildClass, "SDK_INT", "I");
+    jint versionCode = pEnv->GetStaticIntField(buildClass, versionCodeFieldId);
 
     // Signatures
     jobjectArray signatures;
 
-    if (hasMultipleSignersBoolean) {
-        jmethodID getApkContentsSignersMethodId = pEnv->GetMethodID(signingInfoClass, "getApkContentsSigners", "()[Landroid/content/pm/Signature;");
-        signatures = reinterpret_cast<jobjectArray>(pEnv->CallObjectMethod(signingInfoObject, getApkContentsSignersMethodId));
+    if (versionCode >= 28) {
+        // SigningInfo
+        jfieldID signingInfoFieldId = pEnv->GetFieldID(packageInfoClass, "signingInfo", "Landroid/content/pm/SigningInfo;");
+        jobject signingInfoObject = pEnv->GetObjectField(packageInfoObject, signingInfoFieldId);
+        jclass signingInfoClass = pEnv->GetObjectClass(signingInfoObject);
+
+        // SigningInfo.hasMultipleSignersBoolean
+        jmethodID hasMultipleSignersMethodId = pEnv->GetMethodID(signingInfoClass, "hasMultipleSigners", "()Z");
+        jboolean hasMultipleSignersBoolean = pEnv->CallBooleanMethod(signingInfoObject, hasMultipleSignersMethodId);
+
+        if (hasMultipleSignersBoolean) {
+            jmethodID getApkContentsSignersMethodId = pEnv->GetMethodID(signingInfoClass, "getApkContentsSigners", "()[Landroid/content/pm/Signature;");
+            signatures = reinterpret_cast<jobjectArray>(pEnv->CallObjectMethod(signingInfoObject, getApkContentsSignersMethodId));
+        } else {
+            jmethodID getSigningCertificateHistoryMethodId = pEnv->GetMethodID(signingInfoClass, "getSigningCertificateHistory", "()[Landroid/content/pm/Signature;");
+            signatures = reinterpret_cast<jobjectArray>(pEnv->CallObjectMethod(signingInfoObject, getSigningCertificateHistoryMethodId));
+        }
     } else {
-        jmethodID getSigningCertificateHistoryMethodId = pEnv->GetMethodID(signingInfoClass, "getSigningCertificateHistory", "()[Landroid/content/pm/Signature;");
-        signatures = reinterpret_cast<jobjectArray>(pEnv->CallObjectMethod(signingInfoObject, getSigningCertificateHistoryMethodId));
+        jfieldID signaturesFieldId = pEnv->GetFieldID(packageInfoClass, "signatures", "[Landroid/content/pm/Signature;");
+        signatures = reinterpret_cast<jobjectArray>(pEnv->GetObjectField(packageInfoObject, signaturesFieldId));
     }
 
     // First Signature
